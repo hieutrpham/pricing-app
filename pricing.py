@@ -29,11 +29,11 @@ END_DATE = datetime.now()
 
 lightcolor = '#00A3E0'
 darkcolor = '#183A54'
-alpha_key = 'EAY8N3YJIB72Q35C'
+alpha_key = 'your alpha vantage key here'
 
 timeseries = ts(key=alpha_key, output_format='pandas')
 
-class SeaofBTCapp(tk.Tk):
+class Sentdex(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         
@@ -116,16 +116,20 @@ class SeaofBTCapp(tk.Tk):
 
     def get_crypto(self, coin):
         """get crypto currency prices"""
+        import requests
+        link = 'https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=BTC&market=CNY&apikey=demo'
+        r = requests.get(link)
+        
         self.ax.clear()
 
-        df = cc(key=alpha_key, output_format='pandas')
-        crypto = df.get_digital_currency_daily(coin, 'USD')[0].reset_index()
-        crypto.sort_values(by='date', ascending=False, inplace=True)
+        df = pd.DataFrame(r.json()['Time Series (Digital Currency Daily)'], dtype=float).transpose()
+        crypto = df.reset_index()
+        crypto.sort_values(by='index', ascending=False, inplace=True)
         crypto = crypto.iloc[:100, :]
-        crypto['date'] = pd.to_datetime(crypto['date'])
-        crypto["MPLDates"] = crypto.loc[:, "date"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
+        crypto['index'] = pd.to_datetime(crypto['index'])
+        crypto["MPLDates"] = crypto.loc[:, "index"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
-        candle(self.ax, crypto[['MPLDates', '1a. open (USD)', '2a. high (USD)', '3a. low (USD)', '4a. close (USD)']].values, colorup=lightcolor, colordown=darkcolor)
+        candle(self.ax, crypto[['MPLDates', '1b. open (USD)', '2b. high (USD)', '3b. low (USD)', '4b. close (USD)']].values, colorup=lightcolor, colordown=darkcolor)
         
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
         self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
@@ -203,6 +207,6 @@ class SeaofBTCapp(tk.Tk):
             msg.showerror('Error saving file', str(e))
 
 if __name__ == "__main__":
-    app = SeaofBTCapp()
+    app = Sentdex()
     app.geometry('1280x720')
     app.mainloop()
