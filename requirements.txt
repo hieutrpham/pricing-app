@@ -1,0 +1,5 @@
+matplotlib
+pandas
+numpy
+mpl_finance
+alpha_vantage
