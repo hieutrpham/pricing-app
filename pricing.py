@@ -41,7 +41,7 @@ class Sentdex(tk.Tk):
         except Exception:
             pass
 
-        tk.Tk.wm_title(self, 'Sea of FRT')
+        tk.Tk.wm_title(self, 'Sentdex')
 
         # master frame
         container = tk.Frame(self)
