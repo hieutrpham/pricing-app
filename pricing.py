@@ -34,14 +34,14 @@ class Sentdex(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         
-        tk.Tk.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         
         try:
-            tk.Tk.iconbitmap(self, default='got.ico')
+            self.iconbitmap(default='got.ico')
         except Exception:
             pass
 
-        tk.Tk.wm_title(self, 'Sentdex')
+        self.title('Sentdex')
 
         # master frame
         container = tk.Frame(self)
@@ -57,7 +57,7 @@ class Sentdex(tk.Tk):
         filemenu.add_command(label='Exit', command=quit)
         menubar.add_cascade(label='File', menu=filemenu)
 
-        tk.Tk.config(self, menu=menubar)
+        self.config(menu=menubar)
 
         #top frame for user input
         top_frame = tk.Frame(container)
