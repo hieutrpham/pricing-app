@@ -20,9 +20,6 @@ import matplotlib.ticker as mticker
 from datetime import datetime, timedelta
 
 
-LARGE_FONT= ("Verdana", 12)
-NORM_FONT= ("Verdana", 10)
-SMALL_FONT= ("Verdana", 8)
 START_DATE = datetime.now() - timedelta(100)
 END_DATE = datetime.now()
 
@@ -112,10 +109,10 @@ class Sentdex(tk.Tk):
         self.toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.get_crypto('btc')
+        self.get_crypto()
 
-    def get_crypto(self, coin):
-        """get crypto currency prices"""
+    def get_crypto(self):
+        """plotting BTC prices when starting up application"""
         import requests
         link = 'https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol=BTC&market=CNY&apikey=demo'
         r = requests.get(link)
@@ -125,19 +122,13 @@ class Sentdex(tk.Tk):
         df = pd.DataFrame(r.json()['Time Series (Digital Currency Daily)'], dtype=float).transpose()
         crypto = df.reset_index()
         crypto.sort_values(by='index', ascending=False, inplace=True)
-        crypto = crypto.iloc[:100, :]
+        crypto = crypto.iloc[:100, :] #only plotting the last 100 daily prices
         crypto['index'] = pd.to_datetime(crypto['index'])
         crypto["MPLDates"] = crypto.loc[:, "index"].apply(lambda date: mdates.date2num(date.to_pydatetime()))
 
         candle(self.ax, crypto[['MPLDates', '1b. open (USD)', '2b. high (USD)', '3b. low (USD)', '4b. close (USD)']].values, colorup=lightcolor, colordown=darkcolor)
         
-        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-        self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
-        self.figure.autofmt_xdate()
-        self.ax.set_ylabel('Price')
-        self.ax.set_xlabel('Date')
-        self.ax.set_title(f'{coin.upper()} Daily Prices')
-        self.canvas.draw()
+        self.draw('btc')
 
     def get_stock(self, stock, start_date, end_date):
         """get common stock prices"""
@@ -156,7 +147,7 @@ class Sentdex(tk.Tk):
                     stock_data = stock_data[(stock_data['date'] > start_date) & (stock_data['date'] < end_date)]
                 except TypeError:
                     msg.showerror('Date input error', 'Date format should be YYYYMMDD or YYYY-MM-DD')
-            else: # default to last 100 days prices if user doesn't put start_date and end_date
+            else: # default to last 100 days prices if user doesn't put in start_date and end_date
                 stock_data = stock_data[(stock_data['date'] > START_DATE) & (stock_data['date'] < END_DATE)]
 
             try:
@@ -166,13 +157,17 @@ class Sentdex(tk.Tk):
                 
             candle(self.ax, stock_data[['MPLDates', '1. open', '2. high', '3. low', '4. close']].values, colorup=lightcolor, colordown=darkcolor)
             
-            self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-            self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
-            self.figure.autofmt_xdate()
-            self.ax.set_ylabel('Price')
-            self.ax.set_xlabel('Date')
-            self.ax.set_title(label=f'{stock.upper()} Daily Prices', pad=5)
-            self.canvas.draw()
+            self.draw(stock)
+
+    def draw(self, name):
+        """draw on canvas"""
+        self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        self.ax.xaxis.set_major_locator(mticker.MaxNLocator(10))
+        self.figure.autofmt_xdate()
+        self.ax.set_ylabel('Price')
+        self.ax.set_xlabel('Date')
+        self.ax.set_title(label=f'{name.upper()} Daily Prices', pad=5)
+        self.canvas.draw()
     
     def search_symbol(self, name):
         """search symbol based on a given name"""
